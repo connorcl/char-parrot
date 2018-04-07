@@ -10,7 +10,7 @@ def main():
                         model implemented with PyTorch [Training script]""")
     parser.add_argument("config_file",
                         help="""File containing the model configuration. See
-			     sample_config.py for a commented example.""")
+			     sample_config.py for a commented example""")
     parser.add_argument("-e", "--epochs",
                         help="Number of training epochs",
                         required=False,
