@@ -118,7 +118,7 @@ class CharLSTM:
             inputs = Variable(sequence).unsqueeze(0)
             outputs = self.model(inputs)
             output = torch.chunk(outputs, prev_chars, 1)[-1].squeeze(1)
-            output = output * temperature
+            output = output / temperature
             probs = F.softmax(output, dim=1).squeeze(0)
             prediction = probs.multinomial()
             text += self.dataloader.data.characters[prediction.data[0]]

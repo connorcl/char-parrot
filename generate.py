@@ -27,7 +27,8 @@ def main():
                         default=250)
     parser.add_argument("-t", "--temperature",
                         help="""Temperature to use when predicting the
-                        next character""",
+                        next character. Lower is more greedy, higher is
+                        more random""",
                         required=False,
                         default=1)
     
