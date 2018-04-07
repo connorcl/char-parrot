@@ -3,7 +3,7 @@
 # Whether to use the GPU for computation
 gpu = False
 # File containing the training dataset. This is an example dataset containing
-# one of Grimms' Fairy Tales
+# one of Grimms' Fairy Tales from Project Gutenberg
 dataset_file = "the_golden_bird.txt"
 # Whether the training is case-sensitive
 case_sensitive = True
