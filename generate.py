@@ -5,20 +5,20 @@ from load_config import load_config
 
 def main():
     parser = argparse.ArgumentParser(
-            description="""Parrot: a character-level LSTM-RNN-based language 
-            model implemented with PyTorch [Text generation script]""")
+            description="""char-parrot: a character-level LSTM-RNN-based language 
+                        model implemented with PyTorch [Text generation script]""")
     parser.add_argument("config_file",
                         help="""File containing the model configuration. See
                              sample_config.py for a commented example""")
     parser.add_argument("-l", "--load-file",
                         help="""Load previously saved model state from LOAD_FILE. 
-                        The current configuration must be consistent with that 
-                        of the model which generated this file""",
+                             The current configuration must be consistent with that 
+                             of the model which generated this file""",
                         required=True)
     parser.add_argument("-s", '--seed',
                         help="""Seed used to predict the first character.
-                        Must be at least as long as the number of time steps
-                        specificed in the config file""",
+                             Must be at least as long as the number of time steps
+                             specificed in the config file""",
                         required=True)
     parser.add_argument("-n", "--length",
                         help="Length of sequence to predict and print.",
@@ -26,8 +26,8 @@ def main():
                         default=250)
     parser.add_argument("-t", "--temperature",
                         help="""Temperature to use when predicting the
-                        next character. Lower is more greedy, higher is
-                        more random""",
+                             next character. Lower is more greedy, higher is
+                             more random""",
                         required=False,
                         default=1)
     
