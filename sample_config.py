@@ -1,7 +1,10 @@
 ## Model configuration
 
-# File containing the training dataset
-dataset_file = "data.txt"
+# Whether to use the GPU for computation
+gpu = False
+# File containing the training dataset. This is an example dataset containing
+# one of Grimms' Fairy Tales
+dataset_file = "the_golden_bird.txt"
 # Whether the training is case-sensitive
 case_sensitive = True
 # The number of previous characters the model will use

@@ -1,6 +1,5 @@
 import argparse
 
-import model
 from load_config import load_config
 
 
@@ -28,6 +27,11 @@ def main():
     args = parser.parse_args()
     
     config = load_config(args.config_file)
+    
+    if config.gpu:
+        import gpu.model as model
+    else:
+        import model
     
     charLSTM = model.CharLSTM(dataset_file=config.dataset_file,
                               case_sensitive=config.case_sensitive,
