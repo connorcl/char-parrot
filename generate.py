@@ -9,7 +9,8 @@ def main():
             description="""Parrot: a character-level LSTM-RNN-based language 
             model implemented with PyTorch [Text generation script]""")
     parser.add_argument("config_file",
-                        help="File containing the model configuration")
+                        help="""File containing the model configuration. See
+                             sample_config.py for a commented example""")
     parser.add_argument("-l", "--load-file",
                         help="""Load previously saved model state from LOAD_FILE. 
                         The current configuration must be consistent with that 
