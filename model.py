@@ -12,7 +12,7 @@ from chardata import CharData, CharDataLoader
 
 
 class LSTMnet(nn.Module):
-    """Long Short-Term Memory Recurrent Neural Network"""
+    """Long Short-Term Memory model"""
     
     def __init__(self, input_size, output_size, hidden_size, batch_size, nb_layers, dropout):
         super().__init__()
@@ -54,12 +54,53 @@ class LSTMnet(nn.Module):
                            Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size)))
         else:
             self.hidden = tuple(Variable(v.data) for v in self.hidden)
+            
 
-
-class CharLSTM:
-    """A character-level language model using a LSTM-RNN"""
+class GRUnet(nn.Module):
+    """Gated Recurrent Unit model"""
     
-    def __init__(self, dataset_file, case_sensitive, time_steps, batch_size, hidden_size, nb_layers, dropout, learning_rate, zero_hidden, save_file):
+    def __init__(self, input_size, output_size, hidden_size, batch_size, nb_layers, dropout):
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.batch_size = batch_size
+        self.nb_layers = nb_layers
+        self.hidden = Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size))
+        self.gru = nn.GRU(input_size=input_size,
+                          hidden_size=self.hidden_size,
+                          num_layers=self.nb_layers,
+                          batch_first=True,
+                          dropout=dropout)
+        self.dropout = nn.Dropout(p=dropout)
+        self.out = nn.Linear(self.hidden_size, output_size)
+        
+    def forward(self, x):
+        """Forward pass for a sequence"""
+        x, self.hidden = self.gru(x, self.hidden)
+        self.detach_hidden()
+        x = self.dropout(x)
+        x = self.out(x)
+        return x
+    
+    def set_mode(self, mode):
+        """Set the hidden size and zero the data for either batch training 
+        or generation"""
+        if mode == 'train':
+            self.hidden = Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size))
+        elif mode == 'generate':
+            self.hidden = Variable(torch.zeros(self.nb_layers, 1, self.hidden_size))
+    
+    def detach_hidden(self, zero=False):
+        """Detach the hidden state, and optionally zero the hidden data"""
+        if zero:
+            self.hidden = Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size))
+        else:
+            self.hidden = Variable(self.hidden.data)
+
+
+class CharParrot:
+    """A character-level language model using a recurrent neural network (GRU- or LSTM-based)"""
+    
+    def __init__(self, model, dataset_file, case_sensitive, time_steps, batch_size, hidden_size, nb_layers, dropout, learning_rate, zero_hidden, save_file):
         f = open(dataset_file, 'r')
         try:
             text = unidecode(f.read())
@@ -70,7 +111,14 @@ class CharLSTM:
         data = CharData(text)
         self.dataloader = CharDataLoader(data, time_steps, batch_size)
         self.save_file = save_file
-        self.model = LSTMnet(self.dataloader.data.nb_characters, self.dataloader.data.nb_characters, hidden_size, batch_size, nb_layers, dropout)
+        if model.lower() == "gru":
+            Model = GRUnet
+        elif model.lower() == "lstm":
+            Model = LSTMnet
+        else:
+            print("No such model type!")
+            exit(1)
+        self.model = Model(self.dataloader.data.nb_characters, self.dataloader.data.nb_characters, hidden_size, batch_size, nb_layers, dropout)
         self.zero_hidden = zero_hidden
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.RMSprop(self.model.parameters(), lr=learning_rate)

@@ -5,11 +5,12 @@ from load_config import load_config
 
 def main():
     parser = argparse.ArgumentParser(
-            description="""char-parrot: a character-level LSTM-RNN-based language
-                        model implemented with PyTorch [Training script]""")
+            description="""char-parrot: a character-level language model 
+                        using a recurrent neural network (GRU- or LSTM-based) 
+                        implemented with PyTorch [Training script]""")
     parser.add_argument("config_file",
-                        help="""File containing the model configuration. See
-			            sample_config.py for a commented example""")
+                        help="""File containing the model configuration. See 
+                             sample_config.py for a commented example""")
     parser.add_argument("-e", "--epochs",
                         help="Number of training epochs",
                         required=False,
@@ -33,20 +34,21 @@ def main():
     else:
         import model
 
-    charLSTM = model.CharLSTM(dataset_file=config.dataset_file,
-                              case_sensitive=config.case_sensitive,
-                              time_steps=config.time_steps,
-                              batch_size=config.batch_size,
-                              hidden_size=config.hidden_size,
-                              nb_layers=config.nb_layers,
-                              dropout=config.dropout,
-                              learning_rate=config.learning_rate,
-                              zero_hidden=config.zero_hidden,
-                              save_file=args.save_file)
+    char_parrot = model.CharParrot(model=config.model,
+                                   dataset_file=config.dataset_file,
+                                   case_sensitive=config.case_sensitive,
+                                   time_steps=config.time_steps,
+                                   batch_size=config.batch_size,
+                                   hidden_size=config.hidden_size,
+                                   nb_layers=config.nb_layers,
+                                   dropout=config.dropout,
+                                   learning_rate=config.learning_rate,
+                                   zero_hidden=config.zero_hidden,
+                                   save_file=args.save_file)
     if args.load_file:
-        charLSTM.load(args.load_file)
+        char_parrot.load(args.load_file)
 
-    charLSTM.train(int(args.epochs))
+    char_parrot.train(int(args.epochs))
 
 if __name__ == "__main__":
     main()

@@ -5,8 +5,9 @@ from load_config import load_config
 
 def main():
     parser = argparse.ArgumentParser(
-            description="""char-parrot: a character-level LSTM-RNN-based language 
-                        model implemented with PyTorch [Text generation script]""")
+            description="""char-parrot: a character-level language model 
+                        using a recurrent neural network (GRU- or LSTM-based) 
+                        implemented with PyTorch [Text generation script]""")
     parser.add_argument("config_file",
                         help="""File containing the model configuration. See
                              sample_config.py for a commented example""")
@@ -40,20 +41,21 @@ def main():
     else:
         import model
     
-    charLSTM = model.CharLSTM(dataset_file=config.dataset_file,
-                              case_sensitive=config.case_sensitive,
-                              time_steps=config.time_steps,
-                              batch_size=config.batch_size,
-                              hidden_size=config.hidden_size,
-                              nb_layers=config.nb_layers,
-                              dropout=config.dropout,
-                              learning_rate=config.learning_rate,
-                              zero_hidden=config.zero_hidden,
-                              save_file=None)
+    char_parrot = model.CharParrot(model=config.model,
+                                   dataset_file=config.dataset_file,
+                                   case_sensitive=config.case_sensitive,
+                                   time_steps=config.time_steps,
+                                   batch_size=config.batch_size,
+                                   hidden_size=config.hidden_size,
+                                   nb_layers=config.nb_layers,
+                                   dropout=config.dropout,
+                                   learning_rate=config.learning_rate,
+                                   zero_hidden=config.zero_hidden,
+                                   save_file=None)
 
-    charLSTM.load(args.load_file, True)
+    char_parrot.load(args.load_file, True)
     
-    charLSTM.generate(args.seed, int(args.length), config.time_steps, float(args.temperature))
+    char_parrot.generate(args.seed, int(args.length), config.time_steps, float(args.temperature))
     
 if __name__ == "__main__":
     main()
