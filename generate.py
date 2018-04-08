@@ -6,8 +6,8 @@ from load_config import load_config
 def main():
     parser = argparse.ArgumentParser(
             description="""char-parrot: a character-level language model 
-                        using a recurrent neural network (GRU- or LSTM-based) 
-                        implemented with PyTorch [Text generation script]""")
+                        using a GRU- or LSTM-based RNN, implemented with PyTorch 
+                        [Text generation script]""")
     parser.add_argument("config_file",
                         help="""File containing the model configuration. See
                              sample_config.py for a commented example""")
