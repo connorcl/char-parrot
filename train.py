@@ -10,10 +10,10 @@ def main():
                         [Training script]""")
     parser.add_argument("config_file",
                         help="""Path to the python file containing the model
-                            configuration. The .py suffix is optional, and 
-                            since this path will be loaded as a module, it 
-                            must be within the current directory. See 
-                            sample_config.py for a commented example""")
+                             configuration. The .py suffix is optional, and 
+                             since this path will be loaded as a module, it 
+                             must be within the current directory. See 
+                             sample_config.py for a commented example""")
     parser.add_argument("-e", "--epochs",
                         help="Number of training epochs",
                         required=False,
