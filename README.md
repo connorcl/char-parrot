@@ -1,2 +1,2 @@
 # char-parrot
-A character-level LSTM-RNN-based langauge model implemented using PyTorch
+A character-level language model using a recurrent neural network (GRU- or LSTM-based) implemented with PyTorch
