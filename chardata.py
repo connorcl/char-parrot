@@ -1,6 +1,8 @@
 import random
 import torch
 
+from hw import FloatTensor, LongTensor
+
 
 class CharData:
     """Sequence of characters with methods to convert between 
@@ -23,10 +25,10 @@ class CharData:
         or index (target) format"""
         i = self.characters.index(char)
         if tensor_format == 'one-hot':
-            tensor = torch.zeros(self.nb_characters)
+            tensor = FloatTensor(self.nb_characters).zero_()
             tensor[i] = 1
         elif tensor_format == 'index':
-            tensor = torch.LongTensor([i])
+            tensor = LongTensor([i])
         return tensor
     
     def from_tensor(self, tensor):

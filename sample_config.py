@@ -3,7 +3,7 @@
 # Whether to use the GPU for computation
 gpu = False
 # The type of recurrent model to use: "gru" or "lstm" (case insensitive)
-model = "gru"
+model_type = "gru"
 # File containing the training dataset. This is an example dataset containing
 # one of Grimms' Fairy Tales from Project Gutenberg
 dataset_file = "the_golden_bird.txt"

@@ -1,6 +1,7 @@
 import argparse
 
 from load_config import load_config
+import model
 
 
 def main():
@@ -39,12 +40,7 @@ def main():
     
     config = load_config(args.config_file)
     
-    if config.gpu:
-        import gpu.model as model
-    else:
-        import model
-    
-    char_parrot = model.CharParrot(model=config.model,
+    char_parrot = model.CharParrot(model_type=config.model_type,
                                    dataset_file=config.dataset_file,
                                    case_sensitive=config.case_sensitive,
                                    time_steps=config.time_steps,

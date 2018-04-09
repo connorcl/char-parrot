@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from tqdm import tqdm
 
+from hw import use_gpu, FloatTensor
 from chardata import CharData, CharDataLoader
 
 
@@ -19,8 +20,7 @@ class LSTMnet(nn.Module):
         self.hidden_size = hidden_size
         self.batch_size = batch_size
         self.nb_layers = nb_layers
-        self.hidden = (Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size)),
-                       Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size)))
+        self.hidden = self._make_hidden(self.batch_size)
         self.lstm = nn.LSTM(input_size=input_size,
                             hidden_size=self.hidden_size,
                             num_layers=self.nb_layers,
@@ -37,23 +37,26 @@ class LSTMnet(nn.Module):
         x = self.out(x)
         return x
     
-    def set_mode(self, mode):
-        """Set the hidden size and zero the data for either batch training 
-        or generation"""
-        if mode == 'train':
-            self.hidden = (Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size)),
-                           Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size)))
-        elif mode == 'generate':
-            self.hidden = (Variable(torch.zeros(self.nb_layers, 1, self.hidden_size)),
-                           Variable(torch.zeros(self.nb_layers, 1, self.hidden_size)))
+    def _make_hidden(self, batch_size):
+        """Return a fresh (data zeroed) hidden and cell state tuple with a specific batch size"""
+        hidden = (Variable(FloatTensor(self.nb_layers, batch_size, self.hidden_size).zero_()),
+                  Variable(FloatTensor(self.nb_layers, batch_size, self.hidden_size).zero_()))
+        return hidden
     
     def detach_hidden(self, zero=False):
         """Detach the hidden state, and optionally zero the hidden data"""
         if zero:
-            self.hidden = (Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size)),
-                           Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size)))
+            self.hidden = self._make_hidden(self.batch_size)
         else:
             self.hidden = tuple(Variable(v.data) for v in self.hidden)
+    
+    def set_mode(self, mode):
+        """Set the hidden size and zero the data for either batch training 
+        or generation"""
+        if mode == 'train':
+            self.hidden = self._make_hidden(self.batch_size)
+        elif mode == 'generate':
+            self.hidden = self._make_hidden(1)
             
 
 class GRUnet(nn.Module):
@@ -64,7 +67,7 @@ class GRUnet(nn.Module):
         self.hidden_size = hidden_size
         self.batch_size = batch_size
         self.nb_layers = nb_layers
-        self.hidden = Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size))
+        self.hidden = self._make_hidden(self.batch_size)
         self.gru = nn.GRU(input_size=input_size,
                           hidden_size=self.hidden_size,
                           num_layers=self.nb_layers,
@@ -81,26 +84,31 @@ class GRUnet(nn.Module):
         x = self.out(x)
         return x
     
+    def _make_hidden(self, batch_size):
+        """Return a fresh (data zeroed) hidden state Variable with a specific batch size"""
+        hidden = Variable(FloatTensor(self.nb_layers, batch_size, self.hidden_size).zero_())
+        return hidden
+    
     def set_mode(self, mode):
         """Set the hidden size and zero the data for either batch training 
         or generation"""
         if mode == 'train':
-            self.hidden = Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size))
+            self.hidden = self._make_hidden(self.batch_size)
         elif mode == 'generate':
-            self.hidden = Variable(torch.zeros(self.nb_layers, 1, self.hidden_size))
+            self.hidden = self._make_hidden(1)
     
     def detach_hidden(self, zero=False):
         """Detach the hidden state, and optionally zero the hidden data"""
         if zero:
-            self.hidden = Variable(torch.zeros(self.nb_layers, self.batch_size, self.hidden_size))
+            self.hidden = self._make_hidden(self.batch_size)
         else:
             self.hidden = Variable(self.hidden.data)
 
 
 class CharParrot:
-    """A character-level language model using a recurrent neural network (GRU- or LSTM-based)"""
+    """A character-level language model using a GRU- or LSTM-based RNN"""
     
-    def __init__(self, model, dataset_file, case_sensitive, time_steps, batch_size, hidden_size, nb_layers, dropout, learning_rate, zero_hidden, save_file):
+    def __init__(self, model_type, dataset_file, case_sensitive, time_steps, batch_size, hidden_size, nb_layers, dropout, learning_rate, zero_hidden, save_file):
         f = open(dataset_file, 'r')
         try:
             text = unidecode(f.read())
@@ -111,9 +119,9 @@ class CharParrot:
         data = CharData(text)
         self.dataloader = CharDataLoader(data, time_steps, batch_size)
         self.save_file = save_file
-        if model.lower() == "gru":
+        if model_type.lower() == "gru":
             Model = GRUnet
-        elif model.lower() == "lstm":
+        elif model_type.lower() == "lstm":
             Model = LSTMnet
         else:
             print("No such model type!")
@@ -122,6 +130,9 @@ class CharParrot:
         self.zero_hidden = zero_hidden
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.RMSprop(self.model.parameters(), lr=learning_rate)
+        if use_gpu:
+            self.model = self.model.cuda()
+            self.criterion = self.criterion.cuda()
 
     def train(self, epochs=10):
         """Train the recurrent model"""
