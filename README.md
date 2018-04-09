@@ -19,7 +19,7 @@ pip install unidecode tqdm
 
 ## Usage
 
-Run ```python train.py config_file [options]``` to train a model, and ```python generate.py config_file [options]``` to generate text based on a previously trained model. Run each script with the ```--help``` flag for detailed information on its usage. Additionally, see ```sample_config.py``` for a sample configuration file with comments explaining each of its options.
+Run ```python train.py config_file [options]``` to train a model, and ```python generate.py config_file [options]``` to generate text based on a previously trained model. Run each script with the ```--help``` flag for detailed information on its usage. Additionally, see ```sample_config.py``` for a sample configuration file with comments explaining each of its options. The model will run on the GPU if available, unless ```force_cpu``` is set to ```True``` in ```hw.py```.
 
 ### Examples
 
