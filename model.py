@@ -1,6 +1,5 @@
 import os
 import sys
-from unidecode import unidecode
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
@@ -111,7 +110,7 @@ class CharParrot:
     def __init__(self, model_type, dataset_file, case_sensitive, time_steps, batch_size, hidden_size, nb_layers, dropout, learning_rate, zero_hidden, save_file):
         f = open(dataset_file, 'r')
         try:
-            text = unidecode(f.read())
+            text = f.read()
             if not case_sensitive:
                 text = text.lower()
         finally:
