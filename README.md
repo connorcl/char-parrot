@@ -11,10 +11,10 @@ Head to the [Python official website](https://python.org) to download and instal
 Once Python is installed, head to the [PyTorch official website](http://pytorch.org) to download and install PyTorch. The current char-parrot code
 was tested on version 0.3.1.
 
-### Unidecode and tqdm
-Install Unidecode and tqdm using pip:
+### tqdm
+Install tqdm using pip:
 ```bash
-pip install unidecode tqdm
+pip install tqdm
 ```
 
 ## Usage
