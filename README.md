@@ -14,7 +14,7 @@ was tested on version 0.3.1.
 ### Unidecode and tqdm
 Install Unidecode and tqdm using pip:
 ```bash
-$ pip install unidecode tqdm
+pip install unidecode tqdm
 ```
 
 ## Usage
