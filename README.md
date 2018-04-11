@@ -19,19 +19,23 @@ pip install tqdm
 
 ## Usage
 
-Run ```python train.py config_file [options]``` to train a model, and ```python generate.py config_file [options]``` to generate text based on a previously trained model. Run each script with the ```--help``` flag for detailed information on its usage. Additionally, see ```sample_config.py``` for a sample configuration file with comments explaining each of its options. The model will run on the GPU if available, unless ```force_cpu``` is set to ```True``` in ```hw.py```.
+Run ```python train.py project_dir [options]``` to train a model, and ```python generate.py project_dir [options]``` to generate text based on a previously trained model. Run each script with the ```--help``` flag for detailed information on its usage.  
+
+```project_dir``` must contain a ```model.ini``` model configuration file: see ```sample_project/model.ini``` for a commented example explaining each option. 
+
+The model will run on the GPU if available, unless ```force_cpu``` is set to ```True``` in ```hw.py```.  
 
 ### Examples
 
-Train a model based on a configuration stored in ```config.py``` for 20 epochs, saving the model to ```save.pth``` after every epoch:
+Train a model based on a configuration stored in ```project/model.ini``` for 20 epochs, saving the model to ```project/save.pth``` after every epoch:
 ```
-python train.py config -e 20 -s save.pth
+python train.py project -e 20 -s save.pth
 ```
-Load the saved state ```save.pth``` and train for a further 10 epochs, saving the state to ```save.pth``` after every epoch:
+Load the saved state ```project/save.pth``` and train for a further 10 epochs, saving the state to ```project/save.pth``` after every epoch:
 ```
-python train.py config -e 10 -l save.pth -s save.pth
+python train.py project -e 10 -l save.pth -s save.pth
 ```
-Generate 500 characters of text using the model whose state is saved in ```save.pth``` and whose configuration is stored in ```config.py```, using the seed phrase "once upon a time" and the sampling temperature 0.3:
+Generate 500 characters of text using the model whose state is saved in ```project/save.pth``` and whose configuration is stored in ```project/model.ini```, using the seed phrase "once upon a time" and the sampling temperature 0.3:
 ```
-python generate.py config -l save.pth -n 500 -s "once upon a time" -t 0.3
+python generate.py project -l save.pth -n 500 -s "once upon a time" -t 0.3
 ```
