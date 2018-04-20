@@ -12,7 +12,7 @@ Once Python is installed, head to the [PyTorch official website](http://pytorch.
 was tested on version 0.3.1.
 
 ### tqdm
-Install tqdm using pip:
+tqdm is used to display progress bars during training. Install it using pip:
 ```bash
 pip install tqdm
 ```
