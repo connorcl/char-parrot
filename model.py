@@ -138,26 +138,23 @@ class CharParrot:
         self.model.set_mode('train')
         self.dataloader.reset()
         
-        running_loss = 0.0
         
         for epoch in range(1, epochs+1):
-            current_loss = running_loss/len(self.dataloader)
-            if running_loss == 0.0:
-                current_loss = "N/A"
-            else:
-                current_loss = round(current_loss, 5)
-            info = "Epoch {}/{} (Current loss: {})".format(epoch, epochs, current_loss)
             running_loss = 0.0
-            for i in tqdm(range(len(self.dataloader)), desc=info):
-                self.model.detach_hidden(zero=self.zero_hidden)
-                self.optimizer.zero_grad()
-                sequence, target = self.dataloader()
-                sequence, target = Variable(sequence), Variable(target)
-                outputs = self.model(sequence)
-                loss = self.criterion(torch.chunk(outputs, self.dataloader.time_steps, 1)[-1].squeeze(1), target)
-                loss.backward()
-                self.optimizer.step()
-                running_loss += loss.data[0]
+            with tqdm(range(1, len(self.dataloader)+1),
+                          desc="Epoch %d/%d" % (epoch, epochs),
+                          unit="batches") as t:
+                for i in t:
+                    self.model.detach_hidden(zero=self.zero_hidden)
+                    self.optimizer.zero_grad()
+                    sequence, target = self.dataloader()
+                    sequence, target = Variable(sequence), Variable(target)
+                    outputs = self.model(sequence)
+                    loss = self.criterion(torch.chunk(outputs, self.dataloader.time_steps, 1)[-1].squeeze(1), target)
+                    loss.backward()
+                    self.optimizer.step()
+                    running_loss += loss.data[0]
+                    t.set_postfix(loss=running_loss/i)
             self.dataloader.reset()
             if self.save_file is not None:
                 print("Saving progress...")
