@@ -1,7 +1,7 @@
 import random
 import torch
 
-from hw import FloatTensor, LongTensor
+from hw import device
 
 
 class CharData:
@@ -25,11 +25,11 @@ class CharData:
         or index (target) format"""
         i = self.characters.index(char)
         if tensor_format == 'one-hot':
-            tensor = FloatTensor(self.nb_characters).zero_()
+            tensor = torch.zeros(self.nb_characters)
             tensor[i] = 1
         elif tensor_format == 'index':
-            tensor = LongTensor([i])
-        return tensor
+            tensor = torch.tensor([i])
+        return tensor.to(device)
     
     def from_tensor(self, tensor):
         """Convert a tensor in either one-hot or index (target)
@@ -47,29 +47,9 @@ class CharData:
         sequence = torch.cat(sequence, 0)
         return sequence
 
-    
-class DataLoader:
-    """Generic data loader class which returns the next value from
-    its data iterator when called"""
-
-    def __init__(self, data):
-        self.data = data
-        self.data_iter = iter(self.data)
-
-    def __len__(self):
-        return len(self.data)
-    
-    def __call__(self):
-        """Return the next data point from the object's iterator"""
-        return next(self.data_iter)
-
-    def reset(self):
-        """Reset the object's iterator"""
-        self.data_iter = iter(self.data)
-
         
-class CharDataLoader(DataLoader):
-    """Data loader to generate batches of sequential character data
+class CharDataLoader:
+    """Data loader which generates batches of sequential character data
     from a CharData object"""
     
     def __init__(self, data, time_steps, batch_size):

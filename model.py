@@ -1,13 +1,12 @@
 import os
 import sys
 import torch
-from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from tqdm import tqdm
 
-from hw import use_gpu, FloatTensor
+from hw import device
 from chardata import CharData, CharDataLoader
 
 
@@ -20,11 +19,12 @@ class LSTMnet(nn.Module):
         self.batch_size = batch_size
         self.nb_layers = nb_layers
         self.hidden = self._make_hidden(self.batch_size)
+        lstm_dropout = dropout if self.nb_layers > 1 else 0
         self.lstm = nn.LSTM(input_size=input_size,
                             hidden_size=self.hidden_size,
                             num_layers=self.nb_layers,
                             batch_first=True,
-                            dropout=dropout)
+                            dropout=lstm_dropout)
         self.dropout = nn.Dropout(p=dropout)
         self.out = nn.Linear(self.hidden_size, output_size)
         
@@ -38,8 +38,8 @@ class LSTMnet(nn.Module):
     
     def _make_hidden(self, batch_size):
         """Return a fresh (data zeroed) hidden and cell state tuple with a specific batch size"""
-        hidden = (Variable(FloatTensor(self.nb_layers, batch_size, self.hidden_size).zero_()),
-                  Variable(FloatTensor(self.nb_layers, batch_size, self.hidden_size).zero_()))
+        hidden = (torch.zeros(self.nb_layers, batch_size, self.hidden_size),
+                  torch.zeros(self.nb_layers, batch_size, self.hidden_size))
         return hidden
     
     def detach_hidden(self, zero=False):
@@ -47,7 +47,7 @@ class LSTMnet(nn.Module):
         if zero:
             self.hidden = self._make_hidden(self.batch_size)
         else:
-            self.hidden = tuple(Variable(v.data) for v in self.hidden)
+            self.hidden = self.hidden.detach()
     
     def set_mode(self, mode):
         """Set the hidden size and zero the data for either batch training 
@@ -67,11 +67,12 @@ class GRUnet(nn.Module):
         self.batch_size = batch_size
         self.nb_layers = nb_layers
         self.hidden = self._make_hidden(self.batch_size)
+        gru_dropout = dropout if self.nb_layers > 1 else 0
         self.gru = nn.GRU(input_size=input_size,
                           hidden_size=self.hidden_size,
                           num_layers=self.nb_layers,
                           batch_first=True,
-                          dropout=dropout)
+                          dropout=gru_dropout)
         self.dropout = nn.Dropout(p=dropout)
         self.out = nn.Linear(self.hidden_size, output_size)
         
@@ -84,8 +85,8 @@ class GRUnet(nn.Module):
         return x
     
     def _make_hidden(self, batch_size):
-        """Return a fresh (data zeroed) hidden state Variable with a specific batch size"""
-        hidden = Variable(FloatTensor(self.nb_layers, batch_size, self.hidden_size).zero_())
+        """Return a fresh (data zeroed) hidden state tensor with a specific batch size"""
+        hidden = torch.zeros(self.nb_layers, batch_size, self.hidden_size)
         return hidden
     
     def set_mode(self, mode):
@@ -101,13 +102,15 @@ class GRUnet(nn.Module):
         if zero:
             self.hidden = self._make_hidden(self.batch_size)
         else:
-            self.hidden = Variable(self.hidden.data)
+            self.hidden = self.hidden.detach()
 
 
 class CharParrot:
     """A character-level language model using a GRU- or LSTM-based RNN"""
     
-    def __init__(self, model_type, dataset_file, case_sensitive, time_steps, batch_size, hidden_size, nb_layers, dropout, learning_rate, zero_hidden, save_file):
+    def __init__(self, model_type, dataset_file, case_sensitive, time_steps,
+                 batch_size, hidden_size, nb_layers, dropout, learning_rate,
+                 zero_hidden, save_file):
         f = open(dataset_file, 'r', encoding='utf-8')
         try:
             text = f.read()
@@ -125,19 +128,18 @@ class CharParrot:
         else:
             print("No such model type!")
             exit(1)
-        self.model = Model(self.dataloader.data.nb_characters, self.dataloader.data.nb_characters, hidden_size, batch_size, nb_layers, dropout)
+        self.model = Model(self.dataloader.data.nb_characters,
+                           self.dataloader.data.nb_characters,
+                           hidden_size, batch_size, nb_layers,
+                           dropout).to(device)
         self.zero_hidden = zero_hidden
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.RMSprop(self.model.parameters(), lr=learning_rate)
-        if use_gpu:
-            self.model = self.model.cuda()
-            self.criterion = self.criterion.cuda()
 
     def train(self, epochs=10):
         """Train the recurrent model"""
         self.model.set_mode('train')
         self.dataloader.reset()
-        
         
         for epoch in range(1, epochs+1):
             running_loss = 0.0
@@ -148,12 +150,11 @@ class CharParrot:
                     self.model.detach_hidden(zero=self.zero_hidden)
                     self.optimizer.zero_grad()
                     sequence, target = self.dataloader()
-                    sequence, target = Variable(sequence), Variable(target)
                     outputs = self.model(sequence)
                     loss = self.criterion(torch.chunk(outputs, self.dataloader.time_steps, 1)[-1].squeeze(1), target)
                     loss.backward()
                     self.optimizer.step()
-                    running_loss += loss.data[0]
+                    running_loss += loss.item()
                     t.set_postfix(loss=running_loss/i)
             self.dataloader.reset()
             if self.save_file is not None:
@@ -167,18 +168,19 @@ class CharParrot:
         text = seed
         if not quiet: print("#" * 35 +  "\n# Generated text (including seed) #\n" + "#" * 35)
         sys.stdout.write(text)
-        for _ in range(length):
-            prediction_text = text[-prev_chars:]
-            sequence = self.dataloader.data.make_sequence(prediction_text)
-            inputs = Variable(sequence).unsqueeze(0)
-            outputs = self.model(inputs)
-            output = torch.chunk(outputs, prev_chars, 1)[-1].squeeze(1)
-            output = output / temperature
-            probs = F.softmax(output, dim=1).squeeze(0)
-            prediction = probs.multinomial()
-            text += self.dataloader.data.characters[prediction.data[0]]
-            sys.stdout.write(text[-1])
-        sys.stdout.write('\n')
+        with torch.no_grad():
+            for _ in range(length):
+                prediction_text = text[-prev_chars:]
+                sequence = self.dataloader.data.make_sequence(prediction_text)
+                inputs = sequence.unsqueeze(0)
+                outputs = self.model(inputs)
+                output = torch.chunk(outputs, prev_chars, 1)[-1].squeeze(1)
+                output = output / temperature
+                probs = F.softmax(output, dim=1).squeeze(0)
+                prediction = probs.multinomial(1)
+                text += self.dataloader.data.characters[prediction.item()]
+                sys.stdout.write(text[-1])
+            sys.stdout.write('\n')
         
     def save(self, save_filename, quiet=False):
         """Save the state dicts of the model and optimizer to a file"""
