@@ -38,8 +38,8 @@ class LSTMnet(nn.Module):
     
     def _make_hidden(self, batch_size):
         """Return a fresh (data zeroed) hidden and cell state tuple with a specific batch size"""
-        hidden = (torch.zeros(self.nb_layers, batch_size, self.hidden_size),
-                  torch.zeros(self.nb_layers, batch_size, self.hidden_size))
+        hidden = (torch.zeros(self.nb_layers, batch_size, self.hidden_size).to(device),
+                  torch.zeros(self.nb_layers, batch_size, self.hidden_size).to(device))
         return hidden
     
     def detach_hidden(self, zero=False):
@@ -86,7 +86,7 @@ class GRUnet(nn.Module):
     
     def _make_hidden(self, batch_size):
         """Return a fresh (data zeroed) hidden state tensor with a specific batch size"""
-        hidden = torch.zeros(self.nb_layers, batch_size, self.hidden_size)
+        hidden = torch.zeros(self.nb_layers, batch_size, self.hidden_size).to(device)
         return hidden
     
     def set_mode(self, mode):
