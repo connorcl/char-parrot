@@ -108,7 +108,7 @@ class CharParrot:
     """A character-level language model using a GRU- or LSTM-based RNN"""
     
     def __init__(self, model_type, dataset_file, case_sensitive, time_steps, batch_size, hidden_size, nb_layers, dropout, learning_rate, zero_hidden, save_file):
-        f = open(dataset_file, 'r')
+        f = open(dataset_file, 'r', encoding='utf-8')
         try:
             text = f.read()
             if not case_sensitive:
