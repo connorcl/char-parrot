@@ -8,7 +8,7 @@ No installation is required to use char-parrot itself. However, some dependencie
 If you are using Linux, Python 3 is most likely already installed; if not, install it using your distribution's package manager. For other platforms, go to the [Python official website](https://python.org) to download and install Python 3.
 
 ### PyTorch
-Once Python is installed, head to the [PyTorch official website](http://pytorch.org) for information on how to install PyTorch. The current code was tested on version 0.3.1.
+Once Python is installed, head to the [PyTorch official website](http://pytorch.org) for information on how to install the latest version of PyTorch.
 
 ### tqdm
 tqdm is used to display progress bars during training. Install it using pip:
