@@ -118,8 +118,8 @@ class CharParrot:
                 text = text.lower()
         finally:
             f.close()
-        data = CharData(text)
-        self.dataloader = CharDataLoader(data, time_steps, batch_size)
+        chardata = CharData(text)
+        self.dataloader = CharDataLoader(chardata, time_steps, batch_size)
         self.save_file = save_file
         if model_type.lower() == "gru":
             Model = GRUnet
@@ -128,8 +128,8 @@ class CharParrot:
         else:
             print("No such model type!")
             exit(1)
-        self.model = Model(self.dataloader.data.nb_characters,
-                           self.dataloader.data.nb_characters,
+        self.model = Model(self.dataloader.chardata.nb_characters,
+                           self.dataloader.chardata.nb_characters,
                            hidden_size, batch_size, nb_layers,
                            dropout).to(device)
         self.zero_hidden = zero_hidden
@@ -171,14 +171,14 @@ class CharParrot:
         with torch.no_grad():
             for _ in range(length):
                 prediction_text = text[-prev_chars:]
-                sequence = self.dataloader.data.make_sequence(prediction_text)
+                sequence = self.dataloader.chardata.make_sequence(prediction_text)
                 inputs = sequence.unsqueeze(0)
                 outputs = self.model(inputs)
                 output = torch.chunk(outputs, prev_chars, 1)[-1].squeeze(1)
                 output = output / temperature
                 probs = F.softmax(output, dim=1).squeeze(0)
                 prediction = probs.multinomial(1)
-                text += self.dataloader.data.characters[prediction.item()]
+                text += self.dataloader.chardata.characters[prediction.item()]
                 sys.stdout.write(text[-1])
             sys.stdout.write('\n')
         
