@@ -5,7 +5,7 @@ A character-level language model using a GRU- or LSTM-based RNN, implemented wit
 No installation is required to use char-parrot itself - simply clone this repository by running `git clone https://github.com/cclaypool/char-parrot.git`. However, before using char-parrot, some dependencies must be installed.  
 
 ### Python 3
-If you are using Linux, Python 3 is most likely already installed; if not, install it using your distribution's package manager. For other platforms, go to the [Python official website](https://python.org) to download and install Python 3.
+If you are using Linux, Python 3 is most likely already installed; if not, install it using your distribution's package manager. For other platforms, go to the [Python official website](https://python.org) to download and install Python 3. Ensure that the directory where Python 3 is installed is included in the `PATH` environment variable on your system.
 
 ### PyTorch
 Once Python is installed, head to the [PyTorch official website](http://pytorch.org) for information on how to install the latest version of PyTorch.
@@ -17,6 +17,8 @@ pip install tqdm
 ```
 
 ## Usage
+
+Note that you may need to replace `python` with `python3` in the following commands, if, for example, you are using Linux and have both Python 2 and Python 3 installed.
 
 From the char-parrot directory downloaded with `git clone`, run `python train.py project_dir [options]` to train a model, and `python generate.py project_dir [options]` to generate text based on a previously trained model. Run each script with the `--help` flag for detailed information on its usage.  
 
