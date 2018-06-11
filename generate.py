@@ -23,7 +23,7 @@ def main():
     parser.add_argument("-s", '--seed',
                         help="""Seed used to predict the first character.
                              Must be at least as long as the number of time steps
-                             specificed in the config file""",
+                             specified in the config file""",
                         required=True)
     parser.add_argument("-n", "--length",
                         help="Length of sequence to predict and print.",
