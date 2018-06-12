@@ -15,6 +15,7 @@ Once Python is installed, head to the [PyTorch official website](http://pytorch.
 ```bash
 pip install tqdm
 ```
+Note that pip for Python 3 may be called`pip3` rather than `pip`, for example on Linux systems.
 
 ## Usage
 
