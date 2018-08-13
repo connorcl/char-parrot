@@ -47,7 +47,7 @@ class LSTMnet(nn.Module):
         if zero:
             self.hidden = self._make_hidden(self.batch_size)
         else:
-            self.hidden = self.hidden.detach()
+            self.hidden[0].detach()
     
     def set_mode(self, mode):
         """Set the hidden size and zero the data for either batch training 
